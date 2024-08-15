@@ -1,0 +1,2 @@
+translate_dataset_prompt: "Traduza o texto abaixo para português do Brasil (pt-BR) sem qualquer comentário adicional. Se for um código traduza apenas os comentários ou parte textuais usadas para explicações, não traduza o código em si.\n\n{text}"
+translate_dataset_specialist: "Você é um especialista em tradução de textos do inglês para o português."
