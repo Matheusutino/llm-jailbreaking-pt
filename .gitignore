@@ -3,3 +3,7 @@ logs
 __pycache__
 dataset
 vector_store
+results
+to_do.txt
+local_models
+main.ipynb

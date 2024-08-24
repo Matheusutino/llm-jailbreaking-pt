@@ -5,7 +5,7 @@ from src.core.predictors.base import PredictionModel
 class HuggingFacePredictor(PredictionModel):
     """Prediction model implementation for Hugging Face."""
 
-    def __init__(self, model_name: str, device: str = 'gpu'):
+    def __init__(self, model_name: str, device: str = 'cpu'):
         """
         Initializes the HuggingFacePredictor with a model name and another parameter.
 
@@ -18,8 +18,10 @@ class HuggingFacePredictor(PredictionModel):
         
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            device_map='cuda' if self.device == 'cuda' else 'cpu',
+            device_map='cuda' if self.device == 'gpu' else 'cpu',
             torch_dtype='auto',
+            # low_cpu_mem_usage=True,
+            # load_in_8bit=True,
             trust_remote_code=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -27,10 +29,10 @@ class HuggingFacePredictor(PredictionModel):
             'text-generation',
             model=self.model,
             tokenizer=self.tokenizer,
-            # device=0 if self.device == 'cuda' else -1  # -1 for CPU, 0 for GPU
+            # device = 0 if self.device == 'cuda' else -1,
         )
 
-    def predict(self, input_text, max_tokens=50, temperature=0.7, do_sample=True):
+    def predict(self, messages, max_tokens: int = 1024, temperature: float = 0.3, do_sample:bool = True):
         """
         Generates text based on the input text using the specified model.
 
@@ -49,7 +51,7 @@ class HuggingFacePredictor(PredictionModel):
             'do_sample': do_sample
         }
         try:
-            output = self.pipeline(input_text, **generation_args)
+            output = self.pipeline(messages, **generation_args)
             return output[0]['generated_text']
         except Exception as e:
             raise RuntimeError(f"Error generating text: {e}")

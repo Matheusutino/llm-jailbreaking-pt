@@ -1,5 +1,6 @@
 from src.core.messages.openai_message import OpenAIMessageGenerator
-from src.core.messages.huggingface_message import HuggingFaceMessageGenerator
+from src.core.messages.str_message import StrMessageGenerator
+from src.core.messages.llama_message import LlamaMessageGenerator
 
 class MessageManager:
     """Manager class to handle message generation for different model types."""
@@ -8,7 +9,9 @@ class MessageManager:
         """Initializes the MessageManager with supported message generator classes."""
         self.message_generators = {
             'openai': OpenAIMessageGenerator(),
-            'huggingface': HuggingFaceMessageGenerator()
+            'gemini': StrMessageGenerator(),
+            'sabia-7b': StrMessageGenerator(),
+            'llama-3.1': LlamaMessageGenerator()
         }
 
     def generate_message(self, model_type: str, prompt: str, specialist: str = None) -> list:

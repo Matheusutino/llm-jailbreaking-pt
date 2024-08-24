@@ -1,5 +1,9 @@
+from typing import List, Dict, Union
 from src.core.predictors.openai_predictor import OpenAIPredictor
+from src.core.predictors.maritaca_ai import MaritacaAIPredictor
+from src.core.predictors.llama_predictor import LlamaCppPredictor
 from src.core.predictors.huggingface_predictor import HuggingFacePredictor
+from src.core.predictors.gemini_predictor import GeminiPredictor
 
 class PredictionManager:
     """Manager class to handle predictions for a single model type."""
@@ -14,14 +18,21 @@ class PredictionManager:
         """
         if service.lower() == 'openai':
             api_key = kwargs.get('api_key')
-            if not api_key:
-                raise ValueError("API key is required for OpenAI model.")
             self.predictor = OpenAIPredictor(model_name=model_name, api_key=api_key)
-        else:
-            device = kwargs.get('device', 'cuda')
+        elif service.lower() == 'maritaca_ai':
+            api_key = kwargs.get('api_key')
+            self.predictor = MaritacaAIPredictor(model_name=model_name, api_key=api_key)
+        elif service.lower() == 'llama_cpp':
+            device = kwargs.get('device', 'gpu')
+            self.predictor = LlamaCppPredictor(model_name=model_name, device=device)
+        elif service.lower() == 'huggingface':
+            device = kwargs.get('device', 'gpu')
             self.predictor = HuggingFacePredictor(model_name=model_name, device=device)
+        elif service.lower() == 'gemini':
+            api_key = kwargs.get('api_key')
+            self.predictor = GeminiPredictor(model_name=model_name, api_key=api_key)
 
-    def predict(self, messages, temperature: float = 1.0, **kwargs) -> str:
+    def predict(self, messages: Union[str, List[Dict[str, str]]], temperature: float = 0.3, **kwargs) -> str:
         """Generates a prediction using the initialized predictor.
         
         Args:

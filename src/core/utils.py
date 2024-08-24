@@ -83,3 +83,16 @@ def write_pickle(file_path, data):
     except pickle.PicklingError as e:
         print(f"Error pickling data: {e}")
         raise
+
+def check_file_exists(file_path):
+    """
+    Checks if a file exists at the given file path. If the file exists, raises a FileExistsError.
+
+    Parameters:
+    - file_path (str): The full path of the file to check.
+
+    Raises:
+    - FileExistsError: If a file with the given path already exists.
+    """
+    if os.path.exists(file_path):
+        raise FileExistsError(f"The file '{file_path}' already exists.")

@@ -1,0 +1,13 @@
+datasets==2.20.0
+langchain==0.2.14
+langchain_chroma==0.1.2
+langchain_openai==0.1.22
+openai==1.41.0
+pandas==2.2.2
+protobuf==5.27.3
+python-dotenv==1.0.1
+PyYAML==6.0.2
+tenacity==8.5.0
+torch==2.4.0
+tqdm==4.66.5
+transformers==4.44.0

@@ -1,15 +1,17 @@
 import os
 from typing import List, Tuple
-import numpy as np
-import pandas as pd
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
-from src.core.utils import read_pickle
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+
 
 class RAG:
     def __init__(self, 
                  embedding_model_name: str = "text-embedding-3-small", 
-                 index_filename: str = "vector_store/questions_index.pkl"):
+                 index_filename: str = "vector_store/questions_index.pkl",
+                 api_key: str = None):
         """
         Initializes the RAG class.
 
@@ -18,6 +20,8 @@ class RAG:
             index_filename (str): Filename to load the vector index (default: "questions_index.pkl").
         """
         self.embedding_model_name = embedding_model_name
+        self.api_key = api_key or os.environ.get('OPENAI_API_KEY')
+        self.embedding_model = OpenAIEmbeddings(model=self.embedding_model_name, api_key=self.api_key)
         self.index_filename = index_filename
         self.vectorstore = None
         self._load_index()
@@ -28,7 +32,7 @@ class RAG:
         """
         if os.path.exists(self.index_filename):
             try:
-                self.vectorstore = read_pickle(self.index_filename)
+                self.vectorstore = Chroma(persist_directory=self.index_filename, embedding_function=self.embedding_model)
                 print("Vector index loaded successfully.")
             except Exception as e:
                 print(f"Error loading vector index: {e}")
@@ -36,7 +40,7 @@ class RAG:
         else:
             raise FileNotFoundError("Vector index file does not exist.")
 
-    def retrieve_similar_questions(self, query: str, k: int = 5) -> List[Tuple[str, str, str]]:
+    def retrieve_similar_data(self, query: str, k: int = 5) -> List[Tuple[str, str, str]]:
         """
         Retrieves the most similar questions based on the query.
 
@@ -50,14 +54,17 @@ class RAG:
         if not self.vectorstore:
             raise ValueError("Vector index has not been loaded.")
 
-        embedding_model = OpenAIEmbeddings(model_name=self.embedding_model_name)
-        query_embedding = embedding_model.embed(query)
-        results = self.vectorstore.search(query_embedding, k=k)
-        indices = results[1]
+        # query_embedding = self.embedding_model.embed_query(query)
         
-        # Retrieve additional information stored in the vectorstore
-        similar_items = [(self.vectorstore.documents[i], 
-                          self.vectorstore.additional_info[i][0], 
-                          self.vectorstore.additional_info[i][1]) 
-                         for i in indices]
+        # Perform search in the vector store
+        results = self.vectorstore.similarity_search(query, k=k)
+        
+        similar_items = []
+        for result in results:
+            question = result.page_content
+            code_answer = result.metadata.get('code_answer', 'N/A')
+            text_answer = result.metadata.get('text_answer', 'N/A')
+            
+            similar_items.append((question, code_answer, text_answer))
+        
         return similar_items
